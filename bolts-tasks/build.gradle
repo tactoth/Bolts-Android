@@ -13,85 +13,43 @@ sourceSets {
     }
 }
 
-dependencies {
-    provided 'com.google.android:android:4.1.1.4'
-
-    testCompile 'junit:junit:4.12'
-}
-
-//region Maven
-
-apply plugin: 'maven'
-apply plugin: 'signing'
-
-def isSnapshot = version.endsWith('-SNAPSHOT')
-def ossrhUsername = hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : System.getenv('CI_NEXUS_USERNAME')
-def ossrhPassword = hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : System.getenv('CI_NEXUS_PASSWORD')
-
-uploadArchives {
-    repositories.mavenDeployer {
-        beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-        repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-            authentication(userName: ossrhUsername, password: ossrhPassword)
-        }
-
-        snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-            authentication(userName: ossrhUsername, password: ossrhPassword)
-        }
-
-        pom.project {
-            name 'Bolts-Tasks'
-            artifactId = 'bolts-tasks'
-            packaging 'jar'
-            description 'Bolts is a collection of low-level libraries designed to make developing mobile apps easier.'
-            url 'https://github.com/BoltsFramework/Bolts-Android'
-
-            scm {
-                connection 'scm:git@github.com:BoltsFramework/Bolts-Android.git'
-                developerConnection 'scm:git@github.com:BoltsFramework/Bolts-Android.git'
-                url 'https://github.com/BoltsFramework/Bolts-Android'
-            }
-
-            licenses {
-                license {
-                    name 'BSD License'
-                    url 'https://github.com/BoltsFramework/Bolts-Android/blob/master/LICENSE'
-                    distribution 'repo'
-                }
-            }
-
-            developers {
-                developer {
-                    id 'parse'
-                    name 'Parse'
-                }
-            }
-        }
-    }
-}
-
-signing {
-    required { !isSnapshot && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
-}
 
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allJava
 }
 
-task javadocJar (type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
+ext {
+    bintrayRepo = 'android'
+    bintrayName = 'bolts-tasks'
+
+    publishedGroupId = 'com.atomicadd.bolts'
+    libraryName = 'Bolts-Android'
+    artifact = 'bolts-android'
+
+    libraryDescription = 'Bolts android'
+
+    siteUrl = 'https://github.com/tactoth/Bolts-Android'
+    gitUrl = 'https://github.com/tactoth/Bolts-Android'
+
+    libraryVersion = '1.4.1'
+
+    developerId = 'tactoth'
+    developerName = 'Wei Liu'
+    developerEmail = 'tactoth@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
 }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-}
+apply from: '../bintrayv1.gradle'
 
-//endregion
+
+dependencies {
+    provided 'com.google.android:android:4.1.1.4'
+    testCompile 'junit:junit:4.12'
+}
 
 //region Code Coverage
 
